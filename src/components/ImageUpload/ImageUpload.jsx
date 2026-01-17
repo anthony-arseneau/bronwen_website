@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import './ImageUpload.css';
 
-const API_URL = 'https://bronwen.anthonyarseneau.ca/api/upload';
+const API_URL = '';
 
 function ImageUpload({ onUpload, currentImage = null, label = 'Upload Image' }) {
   const [isDragging, setIsDragging] = useState(false);
@@ -54,7 +54,7 @@ function ImageUpload({ onUpload, currentImage = null, label = 'Upload Image' }) 
       const formData = new FormData();
       formData.append('image', file);
 
-      const response = await fetch(`${API_URL}/api/upload`, {
+      const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
