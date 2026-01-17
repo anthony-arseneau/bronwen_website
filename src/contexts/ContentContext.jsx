@@ -78,7 +78,7 @@ export function ContentProvider({ children }) {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/content');
+        const response = await fetch('/api/content');
         if (response.ok) {
           const data = await response.json();
           // Merge with defaults to ensure structure
@@ -109,7 +109,7 @@ export function ContentProvider({ children }) {
 
     const saveContent = async () => {
       try {
-        await fetch('http://localhost:3001/api/content', {
+        await fetch('/api/content', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
