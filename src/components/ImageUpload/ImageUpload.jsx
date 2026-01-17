@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import './ImageUpload.css';
 
-const API_URL = 'http://localhost:3001';
+const API_URL = 'https://bronwen.anthonyarseneau.ca/api/upload';
 
 function ImageUpload({ onUpload, currentImage = null, label = 'Upload Image' }) {
   const [isDragging, setIsDragging] = useState(false);
