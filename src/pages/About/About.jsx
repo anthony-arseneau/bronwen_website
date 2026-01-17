@@ -26,13 +26,15 @@ function About() {
           <div className="about-contact">
             <h3 className="contact-title">Contact</h3>
             <div className="contact-links">
-              <a href={`mailto:${content.siteSettings.email}`} className="contact-link">
-                <span className="contact-icon">✉</span>
-                {content.siteSettings.email}
-              </a>
-              {content.siteSettings.instagram && (
+              {content.contact.email && (
+                <a href={`mailto:${content.contact.email}`} className="contact-link">
+                  <span className="contact-icon">✉</span>
+                  {content.contact.email}
+                </a>
+              )}
+              {content.contact.instagram && (
                 <a
-                  href={content.siteSettings.instagram}
+                  href={content.contact.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="contact-link"
@@ -41,9 +43,9 @@ function About() {
                   instagram
                 </a>
               )}
-              {content.siteSettings.facebook && (
+              {content.contact.facebook && (
                 <a
-                  href={content.siteSettings.facebook}
+                  href={content.contact.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="contact-link"
