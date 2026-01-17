@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout/AdminLayout';
 import ImageUpload from '../../components/ImageUpload/ImageUpload';
 import { useContent } from '../../contexts/ContentContext';
-import './GalleryEditor.css';
 import './EditorPages.css';
+import './GalleryEditor.css';
 
 function GalleryEditor() {
   const {
