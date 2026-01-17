@@ -71,36 +71,64 @@ Her work often revolves around concepts of instability and entanglement, and see
 };
 
 export function ContentProvider({ children }) {
-  const [content, setContent] = useState(() => {
-    try {
-      const saved = localStorage.getItem('artistPortfolioContent');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Ensure all required sections exist by merging with defaults
-        return {
+  const [content, setContent] = useState(defaultContent);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load content from server on mount
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/api/content');
+        if (response.ok) {
+          const data = await response.json();
+          // Merge with defaults to ensure structure
+          setContent(prev => ({
           ...defaultContent,
-          ...parsed,
-          siteSettings: { ...defaultContent.siteSettings, ...(parsed.siteSettings || {}) },
-          home: { ...defaultContent.home, ...(parsed.home || {}) },
-          about: { ...defaultContent.about, ...(parsed.about || {}) },
-          contact: { ...defaultContent.contact, ...(parsed.contact || {}) },
-          gallery: { ...defaultContent.gallery, ...(parsed.gallery || {}) },
-          exhibitions: parsed.exhibitions || defaultContent.exhibitions,
-        };
+          ...data,
+          siteSettings: { ...defaultContent.siteSettings, ...(data.siteSettings || {}) },
+          home: { ...defaultContent.home, ...(data.home || {}) },
+          about: { ...defaultContent.about, ...(data.about || {}) },
+          contact: { ...defaultContent.contact, ...(data.contact || {}) },
+          gallery: { ...defaultContent.gallery, ...(data.gallery || {}) },
+          exhibitions: data.exhibitions || defaultContent.exhibitions,
+          }));
+        }
+      } catch (error) {
+        console.error('Failed to load content:', error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (e) {
-      console.error('Error loading content:', e);
-    }
-    return defaultContent;
-  });
+    };
+
+    fetchContent();
+  }, []);
+
+  // Save content to server whenever it changes (debounced could be better but this ensures sync)
+  useEffect(() => {
+    if (isLoading) return; // Don't save initial state if we haven't loaded yet
+
+    const saveContent = async () => {
+      try {
+        await fetch('http://localhost:3001/api/content', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(content),
+        });
+      } catch (error) {
+        console.error('Failed to save content:', error);
+      }
+    };
+
+    // Use a small timeout to avoid blocking UI and debounce slightly
+    const timeoutId = setTimeout(saveContent, 500);
+    return () => clearTimeout(timeoutId);
+  }, [content, isLoading]);
 
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return sessionStorage.getItem('isAuthenticated') === 'true';
   });
-
-  useEffect(() => {
-    localStorage.setItem('artistPortfolioContent', JSON.stringify(content));
-  }, [content]);
 
   const login = (email, password) => {
     // Default credentials - in production, use proper authentication

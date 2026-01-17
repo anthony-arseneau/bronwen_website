@@ -10,6 +10,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const DATA_FILE = path.join(__dirname, 'data.json');
 
 // Enable CORS for frontend
 app.use(cors({
@@ -18,6 +19,31 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+// API: Get Content
+app.get('/api/content', (req, res) => {
+  try {
+    if (fs.existsSync(DATA_FILE)) {
+      const data = fs.readFileSync(DATA_FILE, 'utf8');
+      res.json(JSON.parse(data));
+    } else {
+      res.status(404).json({ error: 'Content file not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// API: Save Content
+app.post('/api/content', (req, res) => {
+  try {
+    const newContent = req.body;
+    fs.writeFileSync(DATA_FILE, JSON.stringify(newContent, null, 2));
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, 'public', 'uploads');

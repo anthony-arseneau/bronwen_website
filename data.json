@@ -1,0 +1,63 @@
+{
+  "siteSettings": {
+    "artistName": "Bronwen Artist",
+    "favicon": ""
+  },
+  "home": {
+    "title": "Bronwen Artist",
+    "subtitle": "Visual Artist & Photographer",
+    "ctaText": "View Work",
+    "backgroundImage": "",
+    "backgroundColor": "#f5f0e8"
+  },
+  "about": {
+    "profileImage": "",
+    "bioTitle": "ABOUT",
+    "bioText": "Bronwen Artist (she/they) is a Canadian artist working within expanded realms of photography and image making. Of Scottish/French settler ancestry, she was raised in Northern Ontario (Treaty 9 Territory) and currently resides in Kjipuktuk/Halifax.\n\nShe holds an MFA from NSCAD University and a BFA in Photography and Film Studies from the University of Ottawa. Her practice, although rooted in analog photography, consists of diverse material explorations, including the use of found objects and performance.\n\nHer work often revolves around concepts of instability and entanglement, and seeks an empathic approach to destructive human tendencies."
+  },
+  "contact": {
+    "title": "Contact",
+    "content": "",
+    "email": "contact@bronwenartist.com",
+    "phone": "",
+    "instagram": "https://instagram.com/bronwenartist",
+    "facebook": "https://facebook.com/bronwenartist",
+    "twitter": "",
+    "linkedin": "",
+    "locationName": "",
+    "locationUrl": ""
+  },
+  "gallery": {
+    "title": "Gallery",
+    "items": []
+  },
+  "exhibitions": [
+    {
+      "id": "1",
+      "title": "Chronotopes of Contamination",
+      "year": "2025",
+      "venue": "Anna Leonowens Gallery",
+      "location": "Halifax, NS",
+      "description": "A solo exhibition exploring the intersection of time and environmental decay through a series of large-scale photographs and installations.",
+      "images": []
+    },
+    {
+      "id": "2",
+      "title": "Eulogy",
+      "year": "2024",
+      "venue": "Centre for Art Tapes",
+      "location": "Halifax, NS",
+      "description": "A meditation on loss and remembrance through analog photography and sound installation.",
+      "images": []
+    },
+    {
+      "id": "3",
+      "title": "Other Work",
+      "year": "2023",
+      "venue": "Various Locations",
+      "location": "Canada",
+      "description": "A collection of collaborative and experimental works from the past year.",
+      "images": []
+    }
+  ]
+}
