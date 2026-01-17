@@ -26,7 +26,7 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 // Serve static files from public folder
-app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
+app.use('/api/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
 // Serve frontend in production
 const distPath = path.join(__dirname, 'dist');
