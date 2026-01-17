@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 // Enable CORS for frontend
 app.use(cors({
@@ -27,6 +27,20 @@ if (!fs.existsSync(uploadsDir)) {
 
 // Serve static files from public folder
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
+
+// Serve frontend in production
+const distPath = path.join(__dirname, 'dist');
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+  
+  // Handle SPA routing - return index.html for all non-API routes
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) {
+      return next();
+    }
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
 
 // Configure multer for file storage
 const storage = multer.diskStorage({
