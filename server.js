@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3001;
 
 // Enable CORS for frontend
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: ['http://localhost:5173', 'https://bronwen.anthonyarseneau.ca'],
   credentials: true
 }));
 
@@ -80,7 +80,8 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
       return res.status(400).json({ error: 'No file uploaded' });
     }
     
-    const imageUrl = `http://localhost:${PORT}/uploads/${req.file.filename}`;
+    // Replace the hardcoded localhost with the public domain
+    const imageUrl = `https://bronwen.anthonyarseneau.ca/api/uploads/${req.file.filename}`;
     
     res.json({
       success: true,
