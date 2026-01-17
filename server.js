@@ -54,20 +54,6 @@ if (!fs.existsSync(uploadsDir)) {
 // Serve static files from public folder
 app.use('/api/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
-// Serve frontend in production
-const distPath = path.join(__dirname, 'dist');
-if (fs.existsSync(distPath)) {
-  app.use(express.static(distPath));
-  
-  // Handle SPA routing - return index.html for all non-API routes
-  app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) {
-      return next();
-    }
-    res.sendFile(path.join(distPath, 'index.html'));
-  });
-}
-
 // Configure multer for file storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -106,8 +92,8 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
       return res.status(400).json({ error: 'No file uploaded' });
     }
     
-    // Replace the hardcoded localhost with the public domain
-    const imageUrl = `https://bronwen.anthonyarseneau.ca/api/uploads/${req.file.filename}`;
+    // Use relative URL so it works on any domain
+    const imageUrl = `/api/uploads/${req.file.filename}`;
     
     res.json({
       success: true,
@@ -129,7 +115,7 @@ app.post('/api/upload-multiple', upload.array('images', 10), (req, res) => {
     
     const uploadedFiles = req.files.map(file => ({
       filename: file.filename,
-      url: `http://localhost:${PORT}/uploads/${file.filename}`,
+      url: `/api/uploads/${file.filename}`,
       originalName: file.originalname
     }));
     
@@ -166,7 +152,7 @@ app.get('/api/uploads', (req, res) => {
       .filter(file => /\.(jpg|jpeg|png|gif|webp)$/i.test(file))
       .map(file => ({
         filename: file,
-        url: `http://localhost:${PORT}/uploads/${file}`
+        url: `/api/uploads/${file}`
       }));
     
     res.json({ success: true, images });
@@ -184,6 +170,17 @@ app.use((error, req, res, next) => {
   }
   res.status(500).json({ error: error.message });
 });
+
+// Serve frontend in production (MUST be after all API routes)
+const distPath = path.join(__dirname, 'dist');
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+  
+  // SPA fallback - serve index.html for all non-API routes
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
 
 app.listen(PORT, () => {
   console.log(`🖼️  Image upload server running on http://localhost:${PORT}`);
