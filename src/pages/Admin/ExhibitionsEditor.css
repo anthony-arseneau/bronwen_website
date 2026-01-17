@@ -1,0 +1,415 @@
+.exhibitions-editor {
+  padding: 2rem 3rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.editor-header {
+  margin-bottom: 2rem;
+}
+
+.back-button {
+  display: inline-block;
+  font-family: 'Georgia', serif;
+  font-size: 0.85rem;
+  color: #666;
+  text-decoration: none;
+  margin-bottom: 1rem;
+  transition: color 0.2s;
+}
+
+.back-button:hover {
+  color: #333;
+}
+
+.editor-header h2 {
+  font-family: 'Georgia', serif;
+  font-size: 1.75rem;
+  font-weight: 400;
+  color: #333;
+  margin: 0;
+}
+
+.editor-section {
+  background: #fafafa;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border: 1px solid #eee;
+}
+
+.editor-section h3 {
+  font-family: 'Georgia', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #333;
+  margin: 0 0 1.5rem 0;
+}
+
+/* Form Styles */
+.add-form,
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.form-row .form-group.small,
+.form-row .small-input {
+  flex: 0 0 100px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-family: 'Georgia', serif;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 0.75rem;
+  font-family: 'Georgia', serif;
+  font-size: 0.9rem;
+  border: 1px solid #ddd;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #333;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Images Grid */
+.images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.5rem;
+}
+
+.image-preview-small {
+  position: relative;
+  aspect-ratio: 4/3;
+  background: #f0f0f0;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.image-preview-small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(197, 48, 48, 0.9);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.image-preview-small:hover .remove-image-btn {
+  opacity: 1;
+}
+
+.add-image-zone {
+  min-height: 160px;
+  overflow: hidden;
+}
+
+.add-image-zone .upload-zone {
+  min-height: 160px;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+}
+
+.add-image-zone .upload-placeholder {
+  padding: 1rem;
+}
+
+.add-image-zone .upload-hint {
+  display: none;
+}
+
+.add-image-zone.small .upload-zone {
+  min-height: 140px;
+}
+
+.add-image-zone.small .upload-placeholder {
+  padding: 0.75rem;
+}
+
+/* Buttons */
+.add-btn {
+  padding: 0.8rem 2rem;
+  font-family: 'Georgia', serif;
+  font-size: 0.9rem;
+  color: white;
+  background: #333;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  align-self: flex-start;
+}
+
+.add-btn:hover {
+  background: #555;
+}
+
+/* Exhibitions List */
+.exhibitions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.exhibition-row {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: white;
+  border: 1px solid #eee;
+}
+
+.item-order {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.order-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.order-btn:hover:not(:disabled) {
+  background: #f0f0f0;
+  border-color: #999;
+}
+
+.order-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.order-number {
+  font-family: 'Georgia', serif;
+  font-size: 0.85rem;
+  color: #999;
+}
+
+.exhibition-info {
+  flex: 1;
+}
+
+.exhibition-info h4 {
+  font-family: 'Georgia', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #333;
+  margin: 0 0 0.3rem 0;
+}
+
+.exhibition-meta {
+  font-family: 'Georgia', serif;
+  font-size: 0.85rem;
+  color: #888;
+  margin: 0 0 0.5rem 0;
+}
+
+.exhibition-desc {
+  font-family: 'Georgia', serif;
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.exhibition-thumbs {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  align-items: center;
+}
+
+.exhibition-thumbs img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+}
+
+.more-images {
+  font-family: 'Georgia', serif;
+  font-size: 0.8rem;
+  color: #999;
+}
+
+.item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.edit-btn,
+.delete-btn,
+.save-btn,
+.cancel-btn {
+  padding: 0.5rem 1rem;
+  font-family: 'Georgia', serif;
+  font-size: 0.8rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.edit-btn {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.edit-btn:hover {
+  background: #e0e0e0;
+}
+
+.delete-btn {
+  background: none;
+  color: #c53030;
+  border: 1px solid #c53030;
+}
+
+.delete-btn:hover {
+  background: #c53030;
+  color: white;
+}
+
+.save-btn {
+  background: #333;
+  color: white;
+}
+
+.save-btn:hover {
+  background: #555;
+}
+
+.cancel-btn {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.cancel-btn:hover {
+  background: #e0e0e0;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.edit-images {
+  margin-top: 1rem;
+}
+
+.edit-images label {
+  display: block;
+  font-family: 'Georgia', serif;
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+/* Save Success */
+.save-success {
+  position: fixed;
+  top: 100px;
+  right: 2rem;
+  background: #48bb78;
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 4px;
+  font-family: 'Georgia', serif;
+  font-size: 0.9rem;
+  transform: translateX(150%);
+  transition: transform 0.3s ease;
+  z-index: 1000;
+  box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+}
+
+.save-success.show {
+  transform: translateX(0);
+}
+
+.save-success-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.save-checkmark {
+  font-size: 1.2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .exhibitions-editor {
+    padding: 1.5rem;
+  }
+
+  .form-row {
+    flex-direction: column;
+  }
+
+  .form-row .form-group.small,
+  .form-row .small-input {
+    flex: 1;
+  }
+
+  .exhibition-row {
+    flex-direction: column;
+  }
+
+  .item-order {
+    flex-direction: row;
+  }
+
+  .item-actions {
+    flex-direction: row;
+  }
+}

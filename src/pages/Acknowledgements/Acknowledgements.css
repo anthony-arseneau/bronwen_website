@@ -1,0 +1,42 @@
+.acknowledgements-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+}
+
+.acknowledgements-title {
+  font-family: 'Georgia', serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #333;
+  margin: 0 0 3rem 0;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.acknowledgements-content {
+  font-family: 'Georgia', serif;
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.8;
+}
+
+.acknowledgements-content p {
+  margin: 0 0 1.5rem 0;
+}
+
+.acknowledgements-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .acknowledgements-page {
+    padding: 2rem 1.5rem;
+  }
+
+  .acknowledgements-title {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+  }
+}

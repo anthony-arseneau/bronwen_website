@@ -1,0 +1,152 @@
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  width: 220px;
+  background: #fafafa;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #eee;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.admin-title {
+  font-family: 'Georgia', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #333;
+  margin: 0 0 2rem 0;
+  letter-spacing: 0.02em;
+}
+
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.nav-link {
+  display: block;
+  padding: 0.7rem 1rem;
+  font-family: 'Georgia', serif;
+  font-size: 0.85rem;
+  color: #666;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+
+.nav-link:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.nav-link.active {
+  background: #333;
+  color: white;
+}
+
+.logout-button {
+  padding: 0.7rem 1rem;
+  font-family: 'Georgia', serif;
+  font-size: 0.8rem;
+  color: #c53030;
+  background: none;
+  border: 1px solid #c53030;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: auto;
+}
+
+.logout-button:hover {
+  background: #c53030;
+  color: white;
+}
+
+.admin-content {
+  flex: 1;
+  padding: 2rem 3rem;
+  max-width: 900px;
+  margin-left: 220px;
+}
+
+/* Save Success Animation */
+.save-success {
+  position: fixed;
+  top: 100px;
+  right: 2rem;
+  background: #48bb78;
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 4px;
+  font-family: 'Georgia', serif;
+  font-size: 0.9rem;
+  transform: translateX(150%);
+  transition: transform 0.3s ease;
+  z-index: 1000;
+  box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+}
+
+.save-success.show {
+  transform: translateX(0);
+}
+
+.save-success-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.save-checkmark {
+  font-size: 1.2rem;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+
+  .admin-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 1rem;
+    align-items: center;
+  }
+
+  .admin-title {
+    margin: 0;
+    margin-right: auto;
+  }
+
+  .admin-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    order: 3;
+    width: 100%;
+    margin-top: 1rem;
+  }
+
+  .logout-button {
+    margin-top: 0;
+    order: 2;
+  }
+
+  .admin-content {
+    padding: 1.5rem;
+    margin-left: 0;
+  }
+}

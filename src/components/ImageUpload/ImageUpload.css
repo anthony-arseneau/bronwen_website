@@ -1,0 +1,190 @@
+.image-upload-container {
+  width: 100%;
+}
+
+.upload-label {
+  display: block;
+  font-family: 'Georgia', serif;
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.upload-zone {
+  position: relative;
+  width: 100%;
+  min-height: 200px;
+  border: 2px dashed #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+}
+
+.upload-zone:hover {
+  border-color: #999;
+  background: #f5f5f5;
+}
+
+.upload-zone.dragging {
+  border-color: #333;
+  background: #f0f0f0;
+  transform: scale(1.01);
+}
+
+.upload-zone.uploading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.upload-zone.has-preview {
+  border-style: solid;
+  border-color: #ddd;
+}
+
+.file-input {
+  display: none;
+}
+
+/* Placeholder State */
+.upload-placeholder {
+  text-align: center;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.upload-icon {
+  color: #999;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.upload-zone:hover .upload-icon,
+.upload-zone.dragging .upload-icon {
+  color: #666;
+}
+
+.upload-text {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.upload-primary {
+  font-family: 'Georgia', serif;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.upload-secondary {
+  font-family: 'Georgia', serif;
+  font-size: 0.85rem;
+  color: #999;
+}
+
+.upload-hint {
+  display: block;
+  margin-top: 1rem;
+  font-family: 'Georgia', serif;
+  font-size: 0.75rem;
+  color: #bbb;
+}
+
+/* Loading State */
+.upload-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: #666;
+  font-family: 'Georgia', serif;
+  font-size: 0.9rem;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid #eee;
+  border-top-color: #333;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Preview State */
+.preview-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+}
+
+.preview-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.preview-container:hover .preview-overlay {
+  opacity: 1;
+}
+
+.remove-btn {
+  padding: 0.5rem 1rem;
+  font-family: 'Georgia', serif;
+  font-size: 0.85rem;
+  color: white;
+  background: rgba(197, 48, 48, 0.9);
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.remove-btn:hover {
+  background: #c53030;
+}
+
+.change-hint {
+  font-family: 'Georgia', serif;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Error State */
+.upload-error {
+  margin: 0.5rem 0 0 0;
+  font-family: 'Georgia', serif;
+  font-size: 0.8rem;
+  color: #c53030;
+}
