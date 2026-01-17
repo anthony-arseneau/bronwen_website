@@ -74,9 +74,6 @@ function Login() {
                 Sign In
               </button>
             </form>
-            <p className="login-hint">
-              Default: admin@artist.com / admin123
-            </p>
           </>
         )}
       </div>
