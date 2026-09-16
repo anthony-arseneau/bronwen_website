@@ -75,10 +75,14 @@
   color: #777;
 }
 
-.storage-usage-header {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.5rem;
+.storage-usage-label,
+.storage-usage-counter {
+  display: block;
+  text-align: left;
+}
+
+.storage-usage-counter {
+  margin-top: 0.25rem;
   margin-bottom: 0.5rem;
 }
 

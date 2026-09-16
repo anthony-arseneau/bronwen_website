@@ -73,6 +73,7 @@ Her work often revolves around concepts of instability and entanglement, and see
 export function ContentProvider({ children }) {
   const [content, setContent] = useState(defaultContent);
   const [isLoading, setIsLoading] = useState(true);
+  const [saveRevision, setSaveRevision] = useState(0);
 
   // Load content from server on mount
   useEffect(() => {
@@ -109,13 +110,14 @@ export function ContentProvider({ children }) {
 
     const saveContent = async () => {
       try {
-        await fetch('/api/content', {
+        const response = await fetch('/api/content', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(content),
         });
+        if (response.ok) setSaveRevision((revision) => revision + 1);
       } catch (error) {
         console.error('Failed to save content:', error);
       }
@@ -251,6 +253,7 @@ export function ContentProvider({ children }) {
       value={{
         content,
         isLoading,
+        saveRevision,
         isAuthenticated,
         login,
         logout,

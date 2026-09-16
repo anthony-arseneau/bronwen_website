@@ -13,6 +13,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const DATA_FILE = path.join(__dirname, 'data.json');
 const MAX_UPLOAD_STORAGE = 2 * 1024 * 1024 * 1024;
+const UPLOAD_URL_PREFIX = '/api/uploads/';
 
 // Enable CORS for frontend
 app.use(cors({
@@ -41,6 +42,7 @@ app.post('/api/content', (req, res) => {
   try {
     const newContent = req.body;
     fs.writeFileSync(DATA_FILE, JSON.stringify(newContent, null, 2));
+    removeUnreferencedUploads(newContent);
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -64,6 +66,29 @@ const getUploadFiles = (directory) => fs.readdirSync(directory, { withFileTypes:
 
 const getUploadStorageBytes = () => getUploadFiles(uploadsDir)
   .reduce((total, filePath) => total + fs.statSync(filePath).size, 0);
+
+const getReferencedUploadNames = (value, referencedNames = new Set()) => {
+  if (typeof value === 'string' && value.startsWith(UPLOAD_URL_PREFIX)) {
+    const filename = decodeURIComponent(value.slice(UPLOAD_URL_PREFIX.length));
+    if (filename && !filename.includes('/') && !filename.includes('\\')) {
+      referencedNames.add(filename);
+    }
+  } else if (Array.isArray(value)) {
+    value.forEach((item) => getReferencedUploadNames(item, referencedNames));
+  } else if (value && typeof value === 'object') {
+    Object.values(value).forEach((item) => getReferencedUploadNames(item, referencedNames));
+  }
+  return referencedNames;
+};
+
+const removeUnreferencedUploads = (content) => {
+  const referencedNames = getReferencedUploadNames(content);
+  getUploadFiles(uploadsDir).forEach((filePath) => {
+    if (!referencedNames.has(path.basename(filePath))) {
+      fs.unlinkSync(filePath);
+    }
+  });
+};
 
 const formatBytes = (bytes) => {
   if (bytes === 0) return '0 B';

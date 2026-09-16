@@ -4,7 +4,7 @@ import { useContent } from '../../contexts/ContentContext';
 import './AdminLayout.css';
 
 function AdminLayout({ children, showSaveSuccess }) {
-  const { isLoading, logout } = useContent();
+  const { isLoading, saveRevision, logout } = useContent();
   const [storageUsage, setStorageUsage] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -16,12 +16,16 @@ function AdminLayout({ children, showSaveSuccess }) {
     navigate('/');
   };
 
-  useEffect(() => {
+  const loadStorageUsage = () => {
     fetch('/api/uploads/usage')
       .then((response) => response.ok ? response.json() : null)
       .then((data) => setStorageUsage(data))
       .catch(() => setStorageUsage(null));
-  }, []);
+  };
+
+  useEffect(() => {
+    loadStorageUsage();
+  }, [saveRevision]);
 
   return (
     <div className="admin-layout">
@@ -69,10 +73,8 @@ function AdminLayout({ children, showSaveSuccess }) {
         </nav>
         {storageUsage && (
           <div className="storage-usage" aria-label="Upload storage usage">
-            <div className="storage-usage-header">
-              <span>Upload storage</span>
-              <span>{storageUsage.used} / {storageUsage.limit}</span>
-            </div>
+            <span className="storage-usage-label">Upload storage</span>
+            <span className="storage-usage-counter">{storageUsage.used} / {storageUsage.limit}</span>
             <div className="storage-usage-track">
               <div
                 className="storage-usage-fill"
