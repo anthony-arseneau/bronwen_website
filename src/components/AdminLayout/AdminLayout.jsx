@@ -1,9 +1,11 @@
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useContent } from '../../contexts/ContentContext';
 import './AdminLayout.css';
 
 function AdminLayout({ children, showSaveSuccess }) {
-  const { logout } = useContent();
+  const { isLoading, logout } = useContent();
+  const [storageUsage, setStorageUsage] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -13,6 +15,13 @@ function AdminLayout({ children, showSaveSuccess }) {
     logout();
     navigate('/');
   };
+
+  useEffect(() => {
+    fetch('/api/uploads/usage')
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => setStorageUsage(data))
+      .catch(() => setStorageUsage(null));
+  }, []);
 
   return (
     <div className="admin-layout">
@@ -58,13 +67,27 @@ function AdminLayout({ children, showSaveSuccess }) {
             Contact
           </Link>
         </nav>
+        {storageUsage && (
+          <div className="storage-usage" aria-label="Upload storage usage">
+            <div className="storage-usage-header">
+              <span>Upload storage</span>
+              <span>{storageUsage.used} / {storageUsage.limit}</span>
+            </div>
+            <div className="storage-usage-track">
+              <div
+                className="storage-usage-fill"
+                style={{ width: `${Math.min(storageUsage.percentage, 100)}%` }}
+              />
+            </div>
+          </div>
+        )}
         <button onClick={handleLogout} className="logout-button">
           Logout
         </button>
       </div>
 
       <div className="admin-content">
-        {children}
+        {isLoading ? <p className="admin-loading">Loading saved content...</p> : children}
       </div>
     </div>
   );

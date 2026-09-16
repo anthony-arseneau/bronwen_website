@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useContent } from '../../contexts/ContentContext';
 import Lightbox from '../../components/Lightbox/Lightbox';
+import { useContent } from '../../contexts/ContentContext';
 import './Gallery.css';
 
 function Gallery() {

@@ -5,7 +5,7 @@ import { useContent } from '../../contexts/ContentContext';
 import './EditorPages.css';
 
 function ContactEditor() {
-  const { content, isAuthenticated, updateContent } = useContent();
+  const { content, isLoading, isAuthenticated, updateContent } = useContent();
   const navigate = useNavigate();
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [contact, setContact] = useState(content.contact);
@@ -15,6 +15,10 @@ function ContactEditor() {
       navigate('/edit');
     }
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (!isLoading) setContact(content.contact);
+  }, [content.contact, isLoading]);
 
   const showSaveAnimation = () => {
     setShowSaveSuccess(true);

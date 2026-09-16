@@ -9,6 +9,7 @@ import './GalleryEditor.css';
 function GalleryEditor() {
   const {
     content,
+    isLoading,
     isAuthenticated,
     addGalleryItem,
     updateGalleryItem,
@@ -33,6 +34,10 @@ function GalleryEditor() {
       navigate('/edit');
     }
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (!isLoading) setGalleryTitle(content.gallery.title);
+  }, [content.gallery, isLoading]);
 
   const showSaveAnimation = () => {
     setShowSaveSuccess(true);

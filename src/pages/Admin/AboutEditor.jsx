@@ -6,7 +6,7 @@ import { useContent } from '../../contexts/ContentContext';
 import './EditorPages.css';
 
 function AboutEditor() {
-  const { content, isAuthenticated, updateContent } = useContent();
+  const { content, isLoading, isAuthenticated, updateContent } = useContent();
   const navigate = useNavigate();
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [about, setAbout] = useState(content.about);
@@ -16,6 +16,10 @@ function AboutEditor() {
       navigate('/edit');
     }
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (!isLoading) setAbout(content.about);
+  }, [content.about, isLoading]);
 
   const showSaveAnimation = () => {
     setShowSaveSuccess(true);

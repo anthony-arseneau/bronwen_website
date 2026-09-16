@@ -250,6 +250,7 @@ export function ContentProvider({ children }) {
     <ContentContext.Provider
       value={{
         content,
+        isLoading,
         isAuthenticated,
         login,
         logout,

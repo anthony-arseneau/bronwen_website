@@ -6,7 +6,7 @@ import { useContent } from '../../contexts/ContentContext';
 import './EditorPages.css';
 
 function HomeEditor() {
-  const { content, isAuthenticated, updateContent, updateSiteSettings } = useContent();
+  const { content, isLoading, isAuthenticated, updateContent, updateSiteSettings } = useContent();
   const navigate = useNavigate();
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [home, setHome] = useState(content.home || {});
@@ -18,6 +18,14 @@ function HomeEditor() {
       navigate('/edit');
     }
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setHome(content.home || {});
+      setArtistName(content.siteSettings.artistName || '');
+      setFavicon(content.siteSettings.favicon || '');
+    }
+  }, [content.home, content.siteSettings, isLoading]);
 
   // Update favicon in document when it changes
   useEffect(() => {
