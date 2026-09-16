@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 const DATA_FILE = path.join(__dirname, 'data.json');
-const MAX_UPLOAD_STORAGE = 2 * 1024 * 1024 * 1024;
+const MAX_UPLOAD_STORAGE = 1 * 1024 * 1024 * 1024;
 const UPLOAD_URL_PREFIX = '/api/uploads/';
 
 // Enable CORS for frontend
@@ -133,7 +133,7 @@ const saveCompressedImage = async (compressed) => {
 const rejectIfOverStorageLimit = (additionalBytes) => {
   const currentBytes = getUploadStorageBytes();
   if (currentBytes + additionalBytes > MAX_UPLOAD_STORAGE) {
-    const error = new Error('Upload rejected: storage limit reached (2GB)');
+    const error = new Error('Upload rejected: storage limit reached (1GB)');
     error.statusCode = 413;
     throw error;
   }
