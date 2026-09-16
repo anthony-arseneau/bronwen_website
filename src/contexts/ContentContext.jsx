@@ -126,6 +126,20 @@ export function ContentProvider({ children }) {
     return () => clearTimeout(timeoutId);
   }, [content, isLoading]);
 
+  useEffect(() => {
+    const favicon = content.siteSettings?.favicon;
+    const link = document.querySelector("link[rel~='icon']") || document.createElement('link');
+
+    link.rel = 'icon';
+    if (favicon) {
+      link.type = 'image/png';
+      link.href = favicon;
+      document.head.appendChild(link);
+    } else if (link.parentNode) {
+      link.parentNode.removeChild(link);
+    }
+  }, [content.siteSettings?.favicon]);
+
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return sessionStorage.getItem('isAuthenticated') === 'true';
   });

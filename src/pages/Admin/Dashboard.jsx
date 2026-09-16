@@ -8,6 +8,7 @@ function Dashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('settings');
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+  const [storageUsage, setStorageUsage] = useState(null);
 
   // Local state for editing
   const [settings, setSettings] = useState(content.siteSettings);
@@ -19,6 +20,15 @@ function Dashboard() {
       navigate('/edit');
     }
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    fetch('/api/uploads/usage')
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => setStorageUsage(data))
+      .catch(() => setStorageUsage(null));
+  }, [isAuthenticated]);
 
   const handleSave = (section) => {
     switch (section) {
@@ -85,6 +95,20 @@ function Dashboard() {
             Acknowledgements
           </button>
         </nav>
+        {storageUsage && (
+          <div className="storage-usage" aria-label="Upload storage usage">
+            <div className="storage-usage-header">
+              <span>Upload storage</span>
+              <span>{storageUsage.used} / {storageUsage.limit}</span>
+            </div>
+            <div className="storage-usage-track">
+              <div
+                className="storage-usage-fill"
+                style={{ width: `${Math.min(storageUsage.percentage, 100)}%` }}
+              />
+            </div>
+          </div>
+        )}
         <button onClick={handleLogout} className="logout-button">
           Logout
         </button>

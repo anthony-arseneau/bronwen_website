@@ -59,13 +59,13 @@ function ImageUpload({ onUpload, currentImage = null, label = 'Upload Image' }) 
         body: formData,
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
-      if (data.success) {
+      if (response.ok && data.success) {
         setPreview(data.url);
         onUpload(data.url);
       } else {
-        setError(data.error || 'Upload failed');
+        setError(data.error || `Upload failed (${response.status})`);
       }
     } catch (err) {
       setError('Connection failed. Please ensure the server is running using "npm run server" or "npm run dev:all" in your terminal.');

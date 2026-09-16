@@ -41,6 +41,7 @@
 .gallery-image.loaded,
 .gallery-image {
   opacity: 1;
+  cursor: zoom-in;
 }
 
 .gallery-item:hover .gallery-image {

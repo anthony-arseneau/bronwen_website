@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import Lightbox from '../../components/Lightbox/Lightbox';
 import { useContent } from '../../contexts/ContentContext';
 import './Exhibition.css';
 
 function Exhibition() {
   const { id } = useParams();
   const { content } = useContent();
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const exhibition = content.exhibitions.find((ex) => ex.id === id);
 
@@ -43,6 +46,15 @@ function Exhibition() {
                   src={image}
                   alt={`${exhibition.title} - Image ${index + 1}`}
                   className="exhibition-image"
+                  onClick={() => setSelectedImage({ src: image, alt: `${exhibition.title} - Image ${index + 1}` })}
+                  role="button"
+                  tabIndex="0"
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      setSelectedImage({ src: image, alt: `${exhibition.title} - Image ${index + 1}` });
+                    }
+                  }}
                 />
               </div>
             ))}
@@ -53,6 +65,11 @@ function Exhibition() {
       <Link to="/gallery" className="back-link">
         ← Back to Gallery
       </Link>
+      <Lightbox
+        image={selectedImage?.src}
+        alt={selectedImage?.alt}
+        onClose={() => setSelectedImage(null)}
+      />
     </div>
   );
 }
