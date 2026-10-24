@@ -23,6 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 
+# Live content backup written by server.js
+data.json.bak
+
 # Uploads
 public/uploads/*
 !public/uploads/.gitkeep

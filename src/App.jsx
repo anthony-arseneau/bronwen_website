@@ -21,7 +21,7 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
-          <Route path="gallery" element={<Gallery />} />
+          <Route path="gallery/*" element={<Gallery />} />
           <Route path="about" element={<About />} />
           <Route path="exhibitions/:id" element={<Exhibition />} />
           <Route path="contact" element={<Contact />} />

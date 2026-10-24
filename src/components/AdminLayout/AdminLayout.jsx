@@ -4,7 +4,7 @@ import { useContent } from '../../contexts/ContentContext';
 import './AdminLayout.css';
 
 function AdminLayout({ children, showSaveSuccess }) {
-  const { isLoading, saveRevision, logout } = useContent();
+  const { isLoading, loadFailed, saveRevision, saveStatus, logout } = useContent();
   const [storageUsage, setStorageUsage] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ function AdminLayout({ children, showSaveSuccess }) {
       <div className={`save-success ${showSaveSuccess ? 'show' : ''}`}>
         <div className="save-success-content">
           <span className="save-checkmark">✓</span>
-          <span>Saved Successfully</span>
+          <span>Changes queued</span>
         </div>
       </div>
 
@@ -89,7 +89,18 @@ function AdminLayout({ children, showSaveSuccess }) {
       </div>
 
       <div className="admin-content">
-        {isLoading ? <p className="admin-loading">Loading saved content...</p> : children}
+        <div className={`admin-save-status status-${saveStatus}`} aria-live="polite">
+          {saveStatus === 'saving' && 'Saving changes...'}
+          {saveStatus === 'saved' && 'All changes saved'}
+          {saveStatus === 'error' && 'Save failed. Check the server connection and try again.'}
+        </div>
+        {isLoading && <p className="admin-loading">Loading saved content...</p>}
+        {!isLoading && loadFailed && (
+          <p className="admin-loading">
+            Could not load the saved content, so editing is disabled to protect it. Refresh the page to try again.
+          </p>
+        )}
+        {!isLoading && !loadFailed && children}
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import multer from 'multer';
 import path from 'path';
 import sharp from 'sharp';
 import { fileURLToPath } from 'url';
+import { defaultGalleryCategories } from './src/data/galleryCategories.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,6 +13,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 const DATA_FILE = path.join(__dirname, 'data.json');
+const DATA_BACKUP_FILE = path.join(__dirname, 'data.json.bak');
 const MAX_UPLOAD_STORAGE = 1 * 1024 * 1024 * 1024;
 const UPLOAD_URL_PREFIX = '/api/uploads/';
 
@@ -27,8 +29,13 @@ app.use(express.json());
 app.get('/api/content', (req, res) => {
   try {
     if (fs.existsSync(DATA_FILE)) {
-      const data = fs.readFileSync(DATA_FILE, 'utf8');
-      res.json(JSON.parse(data));
+      const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+      // Content saved before gallery sections existed gets the default sections;
+      // its items stay uncategorized until they are assigned in the editor.
+      if (data.gallery && !Array.isArray(data.gallery.categories)) {
+        data.gallery.categories = defaultGalleryCategories;
+      }
+      res.json(data);
     } else {
       res.status(404).json({ error: 'Content file not found' });
     }
@@ -41,6 +48,9 @@ app.get('/api/content', (req, res) => {
 app.post('/api/content', (req, res) => {
   try {
     const newContent = req.body;
+    if (fs.existsSync(DATA_FILE)) {
+      fs.copyFileSync(DATA_FILE, DATA_BACKUP_FILE);
+    }
     fs.writeFileSync(DATA_FILE, JSON.stringify(newContent, null, 2));
     removeUnreferencedUploads(newContent);
     res.json({ success: true });
@@ -84,7 +94,8 @@ const getReferencedUploadNames = (value, referencedNames = new Set()) => {
 const removeUnreferencedUploads = (content) => {
   const referencedNames = getReferencedUploadNames(content);
   getUploadFiles(uploadsDir).forEach((filePath) => {
-    if (!referencedNames.has(path.basename(filePath))) {
+    const filename = path.basename(filePath);
+    if (!filename.startsWith('.') && !referencedNames.has(filename)) {
       fs.unlinkSync(filePath);
     }
   });

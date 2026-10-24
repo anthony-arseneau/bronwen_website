@@ -110,6 +110,23 @@
   margin-left: 220px;
 }
 
+.admin-save-status {
+  min-height: 1.25rem;
+  margin-bottom: 1rem;
+  font-family: 'Georgia', serif;
+  font-size: 0.78rem;
+  color: #56705b;
+  text-align: right;
+}
+
+.admin-save-status.status-saving {
+  color: #777;
+}
+
+.admin-save-status.status-error {
+  color: #a33d35;
+}
+
 .admin-loading {
   font-family: 'Georgia', serif;
   color: #777;

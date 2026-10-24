@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContent } from '../../contexts/ContentContext';
 import './Login.css';
@@ -11,8 +11,11 @@ function Login() {
   const { login, isAuthenticated } = useContent();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (isAuthenticated) navigate('/edit/home', { replace: true });
+  }, [isAuthenticated, navigate]);
+
   if (isAuthenticated) {
-    navigate('/edit/home');
     return null;
   }
 

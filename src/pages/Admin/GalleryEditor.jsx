@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout/AdminLayout';
 import ImageUpload from '../../components/ImageUpload/ImageUpload';
 import { useContent } from '../../contexts/ContentContext';
+import GallerySectionsEditor from './GallerySectionsEditor';
+import { getCategoryLabel, getCategoryOptions } from '../../data/galleryCategories';
 import './EditorPages.css';
 import './GalleryEditor.css';
 
 function GalleryEditor() {
   const {
     content,
-    isLoading,
     isAuthenticated,
     addGalleryItem,
     updateGalleryItem,
@@ -25,19 +26,30 @@ function GalleryEditor() {
     title: '',
     caption: '',
     description: '',
+    category: '',
   });
   const [insertIndex, setInsertIndex] = useState('');
-  const [galleryTitle, setGalleryTitle] = useState(content.gallery.title);
+  const [galleryTitle, setGalleryTitle] = useState(null);
+  const [sectionFilter, setSectionFilter] = useState('');
+  const { categories } = content.gallery;
+  const categoryOptions = getCategoryOptions(categories);
+  const filterIds = sectionFilter && sectionFilter !== 'uncategorized'
+    ? [sectionFilter, ...(categories.find((category) => category.id === sectionFilter)?.children || [])
+      .map((child) => child.id)]
+    : null;
+  // Keep each item's position in the full list so reordering works while filtered.
+  const visibleItems = content.gallery.items
+    .map((item, index) => ({ item, index }))
+    .filter(({ item }) => {
+      if (sectionFilter === 'uncategorized') return !categoryOptions.some((option) => option.value === item.category);
+      return !filterIds || filterIds.includes(item.category);
+    });
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/edit');
     }
   }, [isAuthenticated, navigate]);
-
-  useEffect(() => {
-    if (!isLoading) setGalleryTitle(content.gallery.title);
-  }, [content.gallery, isLoading]);
 
   const showSaveAnimation = () => {
     setShowSaveSuccess(true);
@@ -48,7 +60,7 @@ function GalleryEditor() {
     if (!newItem.image || !newItem.title) return;
     const index = insertIndex !== '' ? parseInt(insertIndex) : null;
     addGalleryItem(newItem, index);
-    setNewItem({ image: '', title: '', caption: '', description: '' });
+    setNewItem({ image: '', title: '', caption: '', description: '', category: '' });
     setInsertIndex('');
     showSaveAnimation();
   };
@@ -67,20 +79,25 @@ function GalleryEditor() {
     }
   };
 
-  const handleMoveUp = (index) => {
-    if (index > 0) {
-      reorderGalleryItems(index, index - 1);
+  // Moves swap with the neighbouring visible item, so a filtered list reorders as shown.
+  const handleMoveUp = (visibleIndex) => {
+    if (visibleIndex > 0) {
+      reorderGalleryItems(visibleItems[visibleIndex].index, visibleItems[visibleIndex - 1].index);
     }
   };
 
-  const handleMoveDown = (index) => {
-    if (index < content.gallery.items.length - 1) {
-      reorderGalleryItems(index, index + 1);
+  const handleMoveDown = (visibleIndex) => {
+    if (visibleIndex < visibleItems.length - 1) {
+      reorderGalleryItems(visibleItems[visibleIndex].index, visibleItems[visibleIndex + 1].index);
     }
   };
 
   const handleSaveTitle = () => {
-    updateContent('gallery', { ...content.gallery, title: galleryTitle });
+    updateContent('gallery', {
+      ...content.gallery,
+      title: galleryTitle ?? content.gallery.title,
+    });
+    setGalleryTitle(null);
     showSaveAnimation();
   };
 
@@ -97,7 +114,7 @@ function GalleryEditor() {
           <div className="inline-edit">
             <input
               type="text"
-              value={galleryTitle}
+              value={galleryTitle ?? content.gallery.title}
               onChange={(e) => setGalleryTitle(e.target.value)}
             />
             <button onClick={handleSaveTitle} className="save-btn">
@@ -105,6 +122,8 @@ function GalleryEditor() {
             </button>
           </div>
         </div>
+
+      <GallerySectionsEditor onChange={showSaveAnimation} />
 
       {/* Add New Item */}
       <div className="editor-section">
@@ -136,6 +155,19 @@ function GalleryEditor() {
                   onChange={(e) => setNewItem({ ...newItem, caption: e.target.value })}
                   placeholder="Medium, Year"
                 />
+              </div>
+              <div className="form-group">
+                <label htmlFor="new-item-category">Section</label>
+                <select
+                  id="new-item-category"
+                  value={newItem.category}
+                  onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
+                >
+                  <option value="">Uncategorized</option>
+                  {categoryOptions.map((category) => (
+                    <option key={category.value} value={category.value}>{category.label}</option>
+                  ))}
+                </select>
               </div>
               <div className="form-group">
                 <label>Description</label>
@@ -170,8 +202,23 @@ function GalleryEditor() {
       {/* Gallery Items List */}
       <div className="editor-section">
         <h3>Gallery Items ({content.gallery.items.length})</h3>
+        <div className="items-filter">
+          <label htmlFor="items-section-filter">Show</label>
+          <select
+            id="items-section-filter"
+            value={sectionFilter}
+            onChange={(e) => setSectionFilter(e.target.value)}
+          >
+            <option value="">All sections</option>
+            <option value="uncategorized">Uncategorized</option>
+            {categoryOptions.map((category) => (
+              <option key={category.value} value={category.value}>{category.label}</option>
+            ))}
+          </select>
+          {sectionFilter && <span>{visibleItems.length} shown</span>}
+        </div>
         <div className="items-list">
-          {content.gallery.items.map((item, index) => (
+          {visibleItems.map(({ item }, index) => (
             <div key={item.id} className="item-row">
               <div className="item-order">
                 <button
@@ -184,7 +231,7 @@ function GalleryEditor() {
                 <span className="order-number">{index + 1}</span>
                 <button
                   onClick={() => handleMoveDown(index)}
-                  disabled={index === content.gallery.items.length - 1}
+                  disabled={index === visibleItems.length - 1}
                   className="order-btn"
                 >
                   ↓
@@ -221,6 +268,19 @@ function GalleryEditor() {
                       }
                       placeholder="Caption"
                     />
+                    <label htmlFor={`item-category-${item.id}`}>Section</label>
+                    <select
+                      id={`item-category-${item.id}`}
+                      value={editingItem.category || ''}
+                      onChange={(e) =>
+                        setEditingItem({ ...editingItem, category: e.target.value })
+                      }
+                    >
+                      <option value="">Uncategorized</option>
+                      {categoryOptions.map((category) => (
+                        <option key={category.value} value={category.value}>{category.label}</option>
+                      ))}
+                    </select>
                     <textarea
                       value={editingItem.description || ''}
                       onChange={(e) =>
@@ -242,6 +302,7 @@ function GalleryEditor() {
                   <>
                     <h4>{item.title}</h4>
                     <p>{item.caption}</p>
+                    <p>Section: {getCategoryLabel(categories, item.category)}</p>
                     {item.description && <p className="item-description-preview">{item.description}</p>}
                   </>
                 )}

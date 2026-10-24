@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { defaultGalleryCategories } from '../data/galleryCategories';
 
 const ContentContext = createContext();
 
@@ -37,6 +38,7 @@ Her work often revolves around concepts of instability and entanglement, and see
   },
   gallery: {
     title: 'Gallery',
+    categories: defaultGalleryCategories,
     items: [],
   },
   exhibitions: [
@@ -74,6 +76,10 @@ export function ContentProvider({ children }) {
   const [content, setContent] = useState(defaultContent);
   const [isLoading, setIsLoading] = useState(true);
   const [saveRevision, setSaveRevision] = useState(0);
+  const [saveStatus, setSaveStatus] = useState('saved');
+  const [loadFailed, setLoadFailed] = useState(false);
+  const saveSequence = useRef(0);
+  const loadedContent = useRef(null);
 
   // Load content from server on mount
   useEffect(() => {
@@ -83,7 +89,7 @@ export function ContentProvider({ children }) {
         if (response.ok) {
           const data = await response.json();
           // Merge with defaults to ensure structure
-          setContent(prev => ({
+          const merged = {
           ...defaultContent,
           ...data,
           siteSettings: { ...defaultContent.siteSettings, ...(data.siteSettings || {}) },
@@ -92,10 +98,15 @@ export function ContentProvider({ children }) {
           contact: { ...defaultContent.contact, ...(data.contact || {}) },
           gallery: { ...defaultContent.gallery, ...(data.gallery || {}) },
           exhibitions: data.exhibitions || defaultContent.exhibitions,
-          }));
+          };
+          loadedContent.current = merged;
+          setContent(merged);
+        } else if (response.status !== 404) {
+          throw new Error(`Content load failed: ${response.status}`);
         }
       } catch (error) {
         console.error('Failed to load content:', error);
+        setLoadFailed(true);
       } finally {
         setIsLoading(false);
       }
@@ -107,8 +118,13 @@ export function ContentProvider({ children }) {
   // Save content to server whenever it changes (debounced could be better but this ensures sync)
   useEffect(() => {
     if (isLoading) return; // Don't save initial state if we haven't loaded yet
+    // Saving after a failed load would overwrite data.json with defaults and the
+    // server would then delete every upload. Visitors who only view the site never save.
+    if (loadFailed || content === loadedContent.current) return;
+    const sequence = ++saveSequence.current;
 
     const saveContent = async () => {
+      setSaveStatus('saving');
       try {
         const response = await fetch('/api/content', {
           method: 'POST',
@@ -117,16 +133,19 @@ export function ContentProvider({ children }) {
           },
           body: JSON.stringify(content),
         });
-        if (response.ok) setSaveRevision((revision) => revision + 1);
+        if (!response.ok) throw new Error(`Content save failed: ${response.status}`);
+        setSaveRevision((revision) => revision + 1);
+        if (sequence === saveSequence.current) setSaveStatus('saved');
       } catch (error) {
         console.error('Failed to save content:', error);
+        if (sequence === saveSequence.current) setSaveStatus('error');
       }
     };
 
     // Use a small timeout to avoid blocking UI and debounce slightly
     const timeoutId = setTimeout(saveContent, 500);
     return () => clearTimeout(timeoutId);
-  }, [content, isLoading]);
+  }, [content, isLoading, loadFailed]);
 
   useEffect(() => {
     const favicon = content.siteSettings?.favicon;
@@ -225,6 +244,39 @@ export function ContentProvider({ children }) {
     });
   };
 
+  const updateGalleryCategories = (categories) => {
+    setContent((prev) => ({
+      ...prev,
+      gallery: { ...prev.gallery, categories },
+    }));
+  };
+
+  // Work in a removed subsection moves up to its parent; work in a removed section becomes uncategorized.
+  const removeGalleryCategory = (id) => {
+    setContent((prev) => {
+      const { categories, items } = prev.gallery;
+      const parent = categories.find((category) => category.children.some((child) => child.id === id));
+      const removed = parent
+        ? [id]
+        : [id, ...(categories.find((category) => category.id === id)?.children || []).map((child) => child.id)];
+      const fallback = parent ? parent.id : '';
+      return {
+        ...prev,
+        gallery: {
+          ...prev.gallery,
+          categories: parent
+            ? categories.map((category) => category === parent
+              ? { ...category, children: category.children.filter((child) => child.id !== id) }
+              : category)
+            : categories.filter((category) => category.id !== id),
+          items: items.map((item) => removed.includes(item.category)
+            ? { ...item, category: fallback }
+            : item),
+        },
+      };
+    });
+  };
+
   const addExhibition = (exhibition) => {
     setContent((prev) => ({
       ...prev,
@@ -254,6 +306,8 @@ export function ContentProvider({ children }) {
         content,
         isLoading,
         saveRevision,
+        saveStatus,
+        loadFailed,
         isAuthenticated,
         login,
         logout,
@@ -263,6 +317,8 @@ export function ContentProvider({ children }) {
         updateGalleryItem,
         removeGalleryItem,
         reorderGalleryItems,
+        updateGalleryCategories,
+        removeGalleryCategory,
         addExhibition,
         updateExhibition,
         removeExhibition,
