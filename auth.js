@@ -22,7 +22,16 @@ const scrypt = (password, salt, cost, blockSize, parallelization) => new Promise
 // Reads KEY=value lines into process.env without overriding variables that are already set.
 export const loadEnvFile = (filePath) => {
   if (!fs.existsSync(filePath)) return;
-  fs.readFileSync(filePath, 'utf8').split(/\r?\n/).forEach((line) => {
+  let text;
+  try {
+    text = fs.readFileSync(filePath, 'utf8');
+  } catch (error) {
+    // An unreadable .env (e.g. created with sudo) must not take the public site down;
+    // the server then starts with the admin login disabled.
+    console.error(`⚠️  Could not read ${filePath} (${error.code}). Fix with: sudo chown $USER ${filePath}`);
+    return;
+  }
+  text.split(/\r?\n/).forEach((line) => {
     const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/);
     if (!match) return;
     const [, key, rawValue] = match;
