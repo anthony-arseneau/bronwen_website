@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import './App.css';
 import Layout from './components/Layout/Layout';
+import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import { ContentProvider } from './contexts/ContentContext';
 import About from './pages/About/About';
 import AboutEditor from './pages/Admin/AboutEditor';
@@ -29,11 +30,13 @@ function App() {
 
         {/* Admin Routes - No Layout wrapper for admin pages */}
         <Route path="/edit" element={<Login />} />
-        <Route path="/edit/home" element={<HomeEditor />} />
-        <Route path="/edit/gallery" element={<GalleryEditor />} />
-        <Route path="/edit/about" element={<AboutEditor />} />
-        <Route path="/edit/exhibitions" element={<ExhibitionsEditor />} />
-        <Route path="/edit/contact" element={<ContactEditor />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/edit/home" element={<HomeEditor />} />
+          <Route path="/edit/gallery" element={<GalleryEditor />} />
+          <Route path="/edit/about" element={<AboutEditor />} />
+          <Route path="/edit/exhibitions" element={<ExhibitionsEditor />} />
+          <Route path="/edit/contact" element={<ContactEditor />} />
+        </Route>
       </Routes>
     </ContentProvider>
   );

@@ -78,6 +78,8 @@ export function ContentProvider({ children }) {
   const [saveRevision, setSaveRevision] = useState(0);
   const [saveStatus, setSaveStatus] = useState('saved');
   const [loadFailed, setLoadFailed] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const saveSequence = useRef(0);
   const loadedContent = useRef(null);
 
@@ -115,12 +117,21 @@ export function ContentProvider({ children }) {
     fetchContent();
   }, []);
 
+  // The login lives in an httpOnly cookie, so ask the server whether it is still valid.
+  useEffect(() => {
+    fetch('/api/session')
+      .then((response) => (response.ok ? response.json() : { authenticated: false }))
+      .then((data) => setIsAuthenticated(Boolean(data.authenticated)))
+      .catch(() => setIsAuthenticated(false))
+      .finally(() => setAuthChecked(true));
+  }, []);
+
   // Save content to server whenever it changes (debounced could be better but this ensures sync)
   useEffect(() => {
     if (isLoading) return; // Don't save initial state if we haven't loaded yet
     // Saving after a failed load would overwrite data.json with defaults and the
-    // server would then delete every upload. Visitors who only view the site never save.
-    if (loadFailed || content === loadedContent.current) return;
+    // server would then delete every upload. Only a logged-in admin's edits are saved.
+    if (loadFailed || !isAuthenticated || content === loadedContent.current) return;
     const sequence = ++saveSequence.current;
 
     const saveContent = async () => {
@@ -133,6 +144,9 @@ export function ContentProvider({ children }) {
           },
           body: JSON.stringify(content),
         });
+        // An expired login sends the admin back to the login page; the unsaved edits stay in
+        // memory and are saved as soon as they log in again.
+        if (response.status === 401) setIsAuthenticated(false);
         if (!response.ok) throw new Error(`Content save failed: ${response.status}`);
         setSaveRevision((revision) => revision + 1);
         if (sequence === saveSequence.current) setSaveStatus('saved');
@@ -145,7 +159,7 @@ export function ContentProvider({ children }) {
     // Use a small timeout to avoid blocking UI and debounce slightly
     const timeoutId = setTimeout(saveContent, 500);
     return () => clearTimeout(timeoutId);
-  }, [content, isLoading, loadFailed]);
+  }, [content, isLoading, loadFailed, isAuthenticated]);
 
   useEffect(() => {
     const favicon = content.siteSettings?.favicon;
@@ -161,23 +175,24 @@ export function ContentProvider({ children }) {
     }
   }, [content.siteSettings?.favicon]);
 
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return sessionStorage.getItem('isAuthenticated') === 'true';
-  });
-
-  const login = (email, password) => {
-    // Default credentials - in production, use proper authentication
-    if (email === 'admin@artist.com' && password === 'admin123') {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('isAuthenticated', 'true');
-      return true;
-    }
-    return false;
+  // Resolves to { ok: true } or { ok: false, error } with a message to show on the login form.
+  const login = async (email, password) => {
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) return { ok: false, error: data.error || `Login failed (${response.status})` };
+    setIsAuthenticated(true);
+    return { ok: true };
   };
 
   const logout = () => {
     setIsAuthenticated(false);
-    sessionStorage.removeItem('isAuthenticated');
+    fetch('/api/logout', { method: 'POST' }).catch((error) => console.error('Failed to log out:', error));
   };
 
   const updateContent = (section, data) => {
@@ -309,6 +324,7 @@ export function ContentProvider({ children }) {
         saveStatus,
         loadFailed,
         isAuthenticated,
+        authChecked,
         login,
         logout,
         updateContent,

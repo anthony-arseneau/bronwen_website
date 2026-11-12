@@ -1,14 +1,25 @@
 import cors from 'cors';
+import crypto from 'crypto';
 import express from 'express';
 import fs from 'fs';
 import multer from 'multer';
 import path from 'path';
 import sharp from 'sharp';
 import { fileURLToPath } from 'url';
+import {
+  SESSION_COOKIE,
+  SESSION_MAX_AGE_MS,
+  createSessionToken,
+  isValidSessionToken,
+  loadEnvFile,
+  readCookie,
+  verifyPassword,
+} from './auth.js';
 import { defaultGalleryCategories } from './src/data/galleryCategories.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+loadEnvFile(path.join(__dirname, '.env'));
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -16,6 +27,23 @@ const DATA_FILE = path.join(__dirname, 'data.json');
 const DATA_BACKUP_FILE = path.join(__dirname, 'data.json.bak');
 const MAX_UPLOAD_STORAGE = 1 * 1024 * 1024 * 1024;
 const UPLOAD_URL_PREFIX = '/api/uploads/';
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '';
+const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+const COOKIE_SECURE = process.env.COOKIE_SECURE === 'true';
+const MAX_LOGIN_FAILURES = 10;
+const LOGIN_FAILURE_WINDOW_MS = 15 * 60 * 1000;
+
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD_HASH) {
+  console.warn('⚠️  Admin login is not set up, so nobody can edit the site. Run: npm run set-password');
+}
+if (!process.env.SESSION_SECRET) {
+  console.warn('⚠️  SESSION_SECRET is not set in .env, so admins are logged out whenever the server restarts.');
+}
+
+// Apache proxies from the same machine; trusting only loopback keeps req.ip the real visitor
+// without letting direct callers spoof X-Forwarded-For.
+app.set('trust proxy', 'loopback');
 
 // Enable CORS for frontend
 app.use(cors({
@@ -24,6 +52,70 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+const isAdminRequest = (req) =>
+  isValidSessionToken(readCookie(req, SESSION_COOKIE), SESSION_SECRET, ADMIN_PASSWORD_HASH);
+
+const requireAdmin = (req, res, next) => {
+  if (isAdminRequest(req)) return next();
+  res.status(401).json({ error: 'Your login has expired. Please log in again.' });
+};
+
+const sessionCookieOptions = (req) => ({
+  httpOnly: true,
+  sameSite: 'strict',
+  secure: COOKIE_SECURE || req.secure,
+  path: '/',
+});
+
+// Failed attempts per visitor IP, so the password can't be guessed by brute force.
+const loginFailures = new Map();
+
+app.post('/api/login', async (req, res, next) => {
+  try {
+    if (!ADMIN_EMAIL || !ADMIN_PASSWORD_HASH) {
+      return res.status(503).json({ error: 'Admin login is not set up on the server yet. Run "npm run set-password" there.' });
+    }
+
+    const now = Date.now();
+    loginFailures.forEach((entry, ip) => {
+      if (entry.resetAt <= now) loginFailures.delete(ip);
+    });
+    const failures = loginFailures.get(req.ip);
+    if (failures && failures.count >= MAX_LOGIN_FAILURES) {
+      return res.status(429).json({ error: 'Too many failed attempts. Try again in 15 minutes.' });
+    }
+
+    const email = String(req.body?.email || '').trim().toLowerCase();
+    const password = String(req.body?.password || '');
+    // Check the password even when the email is wrong, so response time doesn't reveal the email.
+    const passwordMatches = await verifyPassword(password, ADMIN_PASSWORD_HASH);
+    if (!passwordMatches || email !== ADMIN_EMAIL) {
+      const entry = failures || { count: 0, resetAt: now + LOGIN_FAILURE_WINDOW_MS };
+      entry.count += 1;
+      loginFailures.set(req.ip, entry);
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    loginFailures.delete(req.ip);
+    res.cookie(SESSION_COOKIE, createSessionToken(SESSION_SECRET, ADMIN_PASSWORD_HASH), {
+      ...sessionCookieOptions(req),
+      maxAge: SESSION_MAX_AGE_MS,
+    });
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/logout', (req, res) => {
+  res.clearCookie(SESSION_COOKIE, sessionCookieOptions(req));
+  res.json({ success: true });
+});
+
+app.get('/api/session', (req, res) => {
+  res.json({ authenticated: isAdminRequest(req) });
+});
 
 // API: Get Content
 app.get('/api/content', (req, res) => {
@@ -45,7 +137,7 @@ app.get('/api/content', (req, res) => {
 });
 
 // API: Save Content
-app.post('/api/content', (req, res) => {
+app.post('/api/content', requireAdmin, (req, res) => {
   try {
     const newContent = req.body;
     if (fs.existsSync(DATA_FILE)) {
@@ -151,7 +243,7 @@ const rejectIfOverStorageLimit = (additionalBytes) => {
 };
 
 // Report usage so administrators can see the cap before an upload is rejected.
-app.get('/api/uploads/usage', (req, res) => {
+app.get('/api/uploads/usage', requireAdmin, (req, res) => {
   try {
     const usedBytes = getUploadStorageBytes();
     res.json({
@@ -167,7 +259,7 @@ app.get('/api/uploads/usage', (req, res) => {
 });
 
 // Upload single image
-app.post('/api/upload', upload.single('image'), async (req, res, next) => {
+app.post('/api/upload', requireAdmin, upload.single('image'), async (req, res, next) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -193,7 +285,7 @@ app.post('/api/upload', upload.single('image'), async (req, res, next) => {
 });
 
 // Upload multiple images
-app.post('/api/upload-multiple', upload.array('images', 10), async (req, res, next) => {
+app.post('/api/upload-multiple', requireAdmin, upload.array('images', 10), async (req, res, next) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'No files uploaded' });
@@ -226,9 +318,10 @@ app.post('/api/upload-multiple', upload.array('images', 10), async (req, res, ne
 });
 
 // Delete an image
-app.delete('/api/upload/:filename', (req, res) => {
+app.delete('/api/upload/:filename', requireAdmin, (req, res) => {
   try {
-    const filepath = path.join(uploadsDir, req.params.filename);
+    // basename keeps an encoded "../" from reaching files outside the uploads folder.
+    const filepath = path.join(uploadsDir, path.basename(req.params.filename));
     
     if (fs.existsSync(filepath)) {
       fs.unlinkSync(filepath);
@@ -242,7 +335,7 @@ app.delete('/api/upload/:filename', (req, res) => {
 });
 
 // List all uploaded images
-app.get('/api/uploads', (req, res) => {
+app.get('/api/uploads', requireAdmin, (req, res) => {
   try {
     const files = fs.readdirSync(uploadsDir);
     const images = files

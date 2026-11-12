@@ -8,28 +8,35 @@ function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
-  const { login, isAuthenticated } = useContent();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login, isAuthenticated, authChecked } = useContent();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (isAuthenticated) navigate('/edit/home', { replace: true });
   }, [isAuthenticated, navigate]);
 
-  if (isAuthenticated) {
+  if (!authChecked || isAuthenticated) {
     return null;
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsSubmitting(true);
 
-    if (login(email, password)) {
-      setShowSuccess(true);
-      setTimeout(() => {
-        navigate('/edit/home');
-      }, 1500);
-    } else {
-      setError('Invalid email or password');
+    try {
+      const result = await login(email, password);
+      if (result.ok) {
+        setShowSuccess(true);
+      } else {
+        setError(result.error);
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Could not reach the server. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -58,7 +65,7 @@ function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  placeholder="admin@artist.com"
+                  autoComplete="username"
                 />
               </div>
               <div className="form-group">
@@ -69,12 +76,13 @@ function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  autoComplete="current-password"
                   placeholder="••••••••"
                 />
               </div>
               {error && <p className="error-message">{error}</p>}
-              <button type="submit" className="login-button">
-                Sign In
+              <button type="submit" className="login-button" disabled={isSubmitting}>
+                {isSubmitting ? 'Signing In...' : 'Sign In'}
               </button>
             </form>
           </>
